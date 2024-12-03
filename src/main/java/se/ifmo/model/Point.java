@@ -23,7 +23,7 @@ public class Point {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private Users user;
 
     public Long getId() {
         return id;
@@ -65,11 +65,11 @@ public class Point {
         this.result = result;
     }
 
-    public User getUser() {
+    public Users getUser() {
         return user;
     }
 
-    public void setUser(User user) {
+    public void setUser(Users user) {
         this.user = user;
     }
 

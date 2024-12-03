@@ -1,10 +1,11 @@
 package se.ifmo.rest;
+
 import jakarta.ejb.EJB;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import se.ifmo.ejb.UserService;
-import se.ifmo.model.User;
+import se.ifmo.model.Users;
 
 @Path("/users")
 @Produces(MediaType.APPLICATION_JSON)
@@ -17,13 +18,25 @@ public class AuthController {
     @GET
     @Path("/{username}")
     public Response getUserByUsername(@PathParam("username") String username) {
-        User user = userService.findUserByUsername(username);
+        Users user = userService.findUserByUsername(username);
         if (user == null) {
             return Response.status(Response.Status.NOT_FOUND)
-                           .entity("{\"message\":\"User not found\"}")
-                           .build();
+                    .entity("{\"message\":\"User not found\"}")
+                    .build();
         }
         return Response.ok(user).build();
+    }
+
+    @POST
+    @Path("/login")
+    public Response loginUser(UserRequest request) {
+        Users user = userService.authenticate(request.getUsername(), request.getPasswordHash());
+        if (user == null) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                           .entity("{\"message\":\"Invalid credentials\"}")
+                           .build();
+        }
+        return Response.ok("{\"message\":\"Login successful\"}").build();
     }
 
     @POST
@@ -38,7 +51,6 @@ public class AuthController {
         return Response.status(Response.Status.CREATED).build();
     }
 
-    // DTO для получения данных из POST-запросов
     public static class UserRequest {
         private String username;
         private String passwordHash;
