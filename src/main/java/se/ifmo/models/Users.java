@@ -1,4 +1,4 @@
-package se.ifmo.model;
+package se.ifmo.models;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

@@ -1,4 +1,4 @@
-package se.ifmo.model;
+package se.ifmo.models;
 
 import java.sql.Timestamp;
 
