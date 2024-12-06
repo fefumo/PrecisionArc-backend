@@ -1,5 +1,4 @@
-package se.ifmo.ejb;
-import jakarta.ejb.Remote;
+package se.ifmo.services;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
@@ -47,4 +46,3 @@ public class UserService {
     }
     
 }
-

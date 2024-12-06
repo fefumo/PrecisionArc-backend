@@ -11,9 +11,14 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @WebFilter("/*")
 public class CORSFilter implements Filter {
     private static final String ALLOWED_ORIGINS = "http://localhost:3000";
+
+    private Logger logger = LoggerFactory.getLogger(CORSFilter.class);
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException { }
@@ -23,8 +28,8 @@ public class CORSFilter implements Filter {
             throws IOException, ServletException {
 
         HttpServletRequest httpRequest = (HttpServletRequest) request;
-        System.out.println("Request method: " + httpRequest.getMethod());
-        System.out.println("Request URL: " + httpRequest.getRequestURI());
+        logger.debug("Request method: " + httpRequest.getMethod());
+        logger.debug("Request URL: " + httpRequest.getRequestURI());
                 
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         httpResponse.setHeader("Access-Control-Allow-Origin", ALLOWED_ORIGINS);
