@@ -1,31 +1,31 @@
 package se.ifmo.dto;
 
 public class PointRequest {
-    private Double xCoord;
-    private Double yCoord;
-    private Double radius;
-
-    public Double getxCoord() {
-        return xCoord;
+    private Double x;
+    private Double y;
+    private Double r;
+    
+    public Double getX() {
+        return x;
     }
-
-    public void setxCoord(Double xCoord) {
-        this.xCoord = xCoord;
+    public void setX(Double x) {
+        this.x = x;
     }
-
-    public Double getyCoord() {
-        return yCoord;
+    public Double getY() {
+        return y;
     }
-
-    public void setyCoord(Double yCoord) {
-        this.yCoord = yCoord;
+    public void setY(Double y) {
+        this.y = y;
     }
-
-    public Double getRadius() {
-        return radius;
+    public Double getR() {
+        return r;
     }
-
-    public void setRadius(Double radius) {
-        this.radius = radius;
+    public void setR(Double r) {
+        this.r = r;
     }
+    @Override
+    public String toString() {
+        return "PointRequest [x=" + x + ", y=" + y + ", r=" + r + "]";
+    }
+    
 }

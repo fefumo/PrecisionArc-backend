@@ -17,12 +17,12 @@ public class PointService {
 
     public Point savePoint(PointRequest pointRequest, Users user) {
         // Валидируем точку
-        boolean result = AreaChecker.isInArea(pointRequest.getxCoord(), pointRequest.getyCoord(), pointRequest.getRadius());
+        boolean result = AreaChecker.isInArea(pointRequest.getX(), pointRequest.getY(), pointRequest.getR());
 
         Point point = new Point();
-        point.setxCoord(pointRequest.getxCoord());
-        point.setyCoord(pointRequest.getyCoord());
-        point.setRadius(pointRequest.getRadius());
+        point.setxCoord(pointRequest.getX());
+        point.setyCoord(pointRequest.getY());
+        point.setRadius(pointRequest.getR());
         point.setResult(result);
         point.setUser(user);
 

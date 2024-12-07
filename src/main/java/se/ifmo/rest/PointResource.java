@@ -55,10 +55,15 @@ public class PointResource {
     }
 
     @POST
+    @Path("/add")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response addPoint(PointRequest pointRequest, @HeaderParam("Authorization") String authToken) {
         long startTime = System.currentTimeMillis(); // Start time tracking
 
         try {
+            logger.info("Received POST request: " + pointRequest);
+
             if (authToken == null || !authToken.startsWith("Bearer ")) {
                 return Response.status(Response.Status.UNAUTHORIZED)
                                .entity(new ErrorResponse("Invalid or missing Authorization header"))
@@ -101,12 +106,16 @@ public class PointResource {
 
             return Response.status(Response.Status.CREATED).entity(pointResponse).build();
         } catch (Exception e) {
-            logger.error("Error adding point: {}", e.getMessage());
+            logger.info("Error adding point: {}", e.getMessage());
             return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorResponse("Invalid point data")).build();
         }
     }
 
+
     @GET
+    @Path("/get")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response getUserPoints(@HeaderParam("Authorization") String authToken) {
         try {
             if (authToken == null || !authToken.startsWith("Bearer ")) {
@@ -145,7 +154,7 @@ public class PointResource {
 
             return Response.ok(responseList).build();
         } catch (Exception e) {
-            logger.error("Error fetching points: {}", e.getMessage());
+            logger.info("Error fetching points: {}", e.getMessage());
             return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorResponse("Error fetching points")).build();
         }
     }
