@@ -16,7 +16,6 @@ import se.ifmo.dto.TokenResponse;
 import se.ifmo.dto.UserRequest;
 import se.ifmo.models.Users;
 import se.ifmo.services.UserService;
-import se.ifmo.util.JwtUtil;
 
 @Path("/auth")
 @Produces(MediaType.APPLICATION_JSON)
@@ -69,6 +68,7 @@ public class AuthController {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response registerUser(UserRequest request) {
+        logger.info("Register request received");
 
         if (request.getUsername() == null || request.getUsername().isEmpty() ||
             request.getPassword() == null || request.getPassword().isEmpty() ){
@@ -79,9 +79,10 @@ public class AuthController {
         boolean success = userService.registerUser(request.getUsername(), request.getPassword());
         if (!success) {
             return Response.status(Response.Status.CONFLICT)
-                           .entity(new ErrorResponse("Username already taken"))
-                           .build();
+            .entity(new ErrorResponse("Username already taken"))
+            .build();
         }
+        logger.info("User " + request.getUsername() + " registered");
         return Response.status(Response.Status.CREATED).build();
     }
 
