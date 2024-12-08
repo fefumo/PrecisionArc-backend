@@ -45,7 +45,7 @@ public class PointResource {
             if (userService == null || pointService == null) {
                 logger.info("UserService or PointService is null in JNDI lookup.");
             } else {
-                logger.info("Services successfully found in JNDI.");
+                // logger.info("Services successfully found in JNDI.");
             }
         } catch (NamingException e) {
             e.printStackTrace();

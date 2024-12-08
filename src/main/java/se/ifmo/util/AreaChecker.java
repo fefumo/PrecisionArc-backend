@@ -11,11 +11,11 @@ public class AreaChecker {
         boolean inCircle = false;
 
         if (isXInArea(x) && isYInArea(y) && isRInArea(r)){
-            inRectangle = (x >= 0 && x <= r) && (y >= 0 && y <= r / 2);
+            inRectangle = (x >= 0 && x <= r) && (y >= 0 && y <= r);
 
-            inTriangle = (x <= 0 && x >= -r) && (y <= 0 && y >= -r) && (y >= -x - r);
+            inTriangle = (x >= 0 && x <= r) && (y <= 0 && y >= -r) && (y - x + r >= 0);
 
-            inCircle = (x >= 0 && y<= 0) && (x * x + y * y <= (r / 2) * (r / 2));
+            inCircle = (x <= 0 && y >= 0) && (x * x + y * y <= r * r);
 
             return inRectangle || inTriangle || inCircle;
         }
@@ -25,7 +25,7 @@ public class AreaChecker {
     }
 
     private static boolean isXInArea(double x){
-        return x >= -3 && x <= 5;
+        return x >= -5 && x <= 3;
     }
 
     private static boolean isYInArea(double y){
@@ -33,6 +33,6 @@ public class AreaChecker {
     }
 
     private static boolean isRInArea(double r){
-        return r >=1 && r <= 4;
+        return r >=1 && r <= 3;
     }
 }
