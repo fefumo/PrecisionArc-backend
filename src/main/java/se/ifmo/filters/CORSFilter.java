@@ -34,13 +34,13 @@ public class CORSFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
+        logger.debug("Request method: " + httpRequest.getMethod());
+        logger.debug("Request URL: " + httpRequest.getRequestURI());
+
         // Обработка preflight запроса (OPTIONS)
         if ("OPTIONS".equalsIgnoreCase(httpRequest.getMethod())) {
             httpResponse.setStatus(HttpServletResponse.SC_OK);
         }
-
-        logger.debug("Request method: " + httpRequest.getMethod());
-        logger.debug("Request URL: " + httpRequest.getRequestURI());
 
         httpResponse.setHeader("Access-Control-Allow-Origin", ALLOWED_ORIGINS);
         httpResponse.setHeader("Access-Control-Allow-Methods", ALLOWED_METHODS);

@@ -21,12 +21,12 @@ import se.ifmo.util.JwtUtil;
 @Path("/auth")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class AuthController {
+public class UserController {
 
     @EJB
     private UserService userService;
 
-    private Logger logger = LoggerFactory.getLogger(AuthController.class);
+    private Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @PostConstruct
     public void init() {

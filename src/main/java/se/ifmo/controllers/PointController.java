@@ -36,7 +36,6 @@ public class PointController {
 
     private final Logger logger = LoggerFactory.getLogger(PointController.class);
 
-
     @PostConstruct
     public void init() {
         try {
@@ -61,18 +60,18 @@ public class PointController {
         long startTime = System.currentTimeMillis(); // Start time tracking
 
         try {
-            logger.info("Received POST request: " + pointRequest);
+            logger.info("Received point request: " + pointRequest);
 
             if (authToken == null || !authToken.startsWith("Bearer ")) {
                 return Response.status(Response.Status.UNAUTHORIZED)
-                               .entity(new ErrorResponse("Invalid or missing Authorization header"))
-                               .build();
+                        .entity(new ErrorResponse("Invalid or missing Authorization header"))
+                        .build();
             }
             String token = authToken.substring(7);
             if (!JwtUtil.validateToken(token)) {
                 return Response.status(Response.Status.UNAUTHORIZED)
-                               .entity(new ErrorResponse("Invalid token"))
-                               .build();
+                        .entity(new ErrorResponse("Invalid token"))
+                        .build();
             }
 
             String username = JwtUtil.extractUsername(token);
@@ -80,8 +79,8 @@ public class PointController {
 
             if (user == null) {
                 return Response.status(Response.Status.UNAUTHORIZED)
-                               .entity(new ErrorResponse("User not found"))
-                               .build();
+                        .entity(new ErrorResponse("User not found"))
+                        .build();
             }
 
             logger.info("Adding point for user: " + username);
@@ -92,17 +91,17 @@ public class PointController {
 
             Point point = pointService.savePoint(pointRequest, user, elapsedTime);
 
-            // String currentTimeStr = new SimpleDateFormat("HH:mm:ss.SSS").format(new Date(currentTime));
+            // String currentTimeStr = new SimpleDateFormat("HH:mm:ss.SSS").format(new
+            // Date(currentTime));
 
             PointResponse pointResponse = new PointResponse(
-                point.getId(),
-                point.getX(),
-                point.getY(),
-                point.getR(),
-                point.getResult(),
-                point.getTimestampString(),
-                String.valueOf(elapsedTime)
-            );
+                    point.getId(),
+                    point.getX(),
+                    point.getY(),
+                    point.getR(),
+                    point.getResult(),
+                    point.getTimestampString(),
+                    String.valueOf(elapsedTime));
 
             return Response.status(Response.Status.CREATED).entity(pointResponse).build();
         } catch (Exception e) {
@@ -111,6 +110,34 @@ public class PointController {
         }
     }
 
+    @GET
+    @Path("/clearTable")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response clearTable(@HeaderParam("Authorization") String authToken) {
+        if (authToken == null || !authToken.startsWith("Bearer ")) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity(new ErrorResponse("Invalid or missing Authorization header"))
+                    .build();
+        }
+        String token = authToken.substring(7);
+        if (!JwtUtil.validateToken(token)) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity(new ErrorResponse("Invalid token"))
+                    .build();
+        }
+    
+        String username = JwtUtil.extractUsername(token);
+
+        Users user = userService.findUserByUsername(username);
+        try {
+            pointService.deleteUserPoints(user);
+            return Response.status(Response.Status.OK).build();
+        } catch (Exception e) {
+            logger.info("Error clearing table: ", e.getMessage());
+            return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorResponse("Can't clear table")).build();
+        }
+    }
 
     @GET
     @Path("/get")
@@ -120,14 +147,14 @@ public class PointController {
         try {
             if (authToken == null || !authToken.startsWith("Bearer ")) {
                 return Response.status(Response.Status.UNAUTHORIZED)
-                            .entity(new ErrorResponse("Invalid or missing Authorization header"))
-                            .build();
+                        .entity(new ErrorResponse("Invalid or missing Authorization header"))
+                        .build();
             }
             String token = authToken.substring(7);
             if (!JwtUtil.validateToken(token)) {
                 return Response.status(Response.Status.UNAUTHORIZED)
-                            .entity(new ErrorResponse("Invalid token"))
-                            .build();
+                        .entity(new ErrorResponse("Invalid token"))
+                        .build();
             }
 
             String username = JwtUtil.extractUsername(token);
@@ -135,28 +162,28 @@ public class PointController {
 
             if (user == null) {
                 return Response.status(Response.Status.UNAUTHORIZED)
-                            .entity(new ErrorResponse("User not found"))
-                            .build();
+                        .entity(new ErrorResponse("User not found"))
+                        .build();
             }
 
             List<Point> points = pointService.getUserPoints(user);
 
             List<PointResponse> responseList = points.stream()
-                .map(point -> new PointResponse(
-                    point.getId(),
-                    point.getX(),
-                    point.getY(),
-                    point.getR(),
-                    point.getResult(),
-                    point.getTimestampString(), 
-                    String.valueOf(point.getElapsedTime())
-                ))
-                .collect(Collectors.toList());
+                    .map(point -> new PointResponse(
+                            point.getId(),
+                            point.getX(),
+                            point.getY(),
+                            point.getR(),
+                            point.getResult(),
+                            point.getTimestampString(),
+                            String.valueOf(point.getElapsedTime())))
+                    .collect(Collectors.toList());
 
             return Response.ok(responseList).build();
         } catch (Exception e) {
             logger.info("Error fetching points: {}", e.getMessage());
-            return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorResponse("Error fetching points")).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorResponse("Error fetching points"))
+                    .build();
         }
     }
 }

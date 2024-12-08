@@ -38,5 +38,13 @@ public class PointService {
                 .setParameter("user", user)
                 .getResultList();
     }
+
+    public void deleteUserPoints(Users user) {
+        entityManager.createQuery(
+            "DELETE FROM Point p WHERE p.user.id = :userId"
+        )
+        .setParameter("userId", user.getId())
+        .executeUpdate();
+    }    
     
 }
