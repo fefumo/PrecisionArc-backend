@@ -1,4 +1,4 @@
-package se.ifmo.rest;
+package se.ifmo.controllers;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -16,6 +16,7 @@ import se.ifmo.dto.TokenResponse;
 import se.ifmo.dto.UserRequest;
 import se.ifmo.entities.Users;
 import se.ifmo.services.UserService;
+import se.ifmo.util.JwtUtil;
 
 @Path("/auth")
 @Produces(MediaType.APPLICATION_JSON)

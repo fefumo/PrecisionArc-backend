@@ -1,4 +1,4 @@
-package se.ifmo.rest;
+package se.ifmo.controllers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +15,7 @@ import se.ifmo.entities.Point;
 import se.ifmo.entities.Users;
 import se.ifmo.services.PointService;
 import se.ifmo.services.UserService;
+import se.ifmo.util.JwtUtil;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,7 +26,7 @@ import javax.naming.NamingException;
 @Path("/points")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class PointResource {
+public class PointController {
 
     @EJB
     private PointService pointService;
@@ -33,7 +34,7 @@ public class PointResource {
     @EJB
     private UserService userService;
 
-    private final Logger logger = LoggerFactory.getLogger(PointResource.class);
+    private final Logger logger = LoggerFactory.getLogger(PointController.class);
 
 
     @PostConstruct

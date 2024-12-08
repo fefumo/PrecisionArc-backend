@@ -1,4 +1,4 @@
-package se.ifmo.rest;
+package se.ifmo.filters;
 
 import java.io.IOException;
 import java.util.Base64;

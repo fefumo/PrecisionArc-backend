@@ -1,4 +1,4 @@
-package se.ifmo.rest;
+package se.ifmo.filters;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;

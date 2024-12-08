@@ -1,4 +1,4 @@
-package se.ifmo.rest;
+package se.ifmo.util;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
