@@ -1,6 +1,5 @@
 package se.ifmo.dto;
 
-// DTO для ошибки
 public class ErrorResponse {
     private String message;
 

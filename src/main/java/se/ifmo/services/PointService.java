@@ -16,7 +16,6 @@ public class PointService {
     private EntityManager entityManager;
 
     public Point savePoint(PointRequest pointRequest, Users user, long elapsedTime) {
-        // Валидируем точку
         boolean result = AreaChecker.isInArea(pointRequest.getX(), pointRequest.getY(), pointRequest.getR());
 
         Point point = new Point();

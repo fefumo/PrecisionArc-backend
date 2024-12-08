@@ -6,19 +6,12 @@
 
     <display-name>PrecisionArc</display-name>
 
-    <!-- Настройка сервлета JAX-RS -->
     <servlet>
         <servlet-name>Jersey REST Service</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
-        <init-param>
-            <!-- Укажите пакет, в котором находятся REST-классы -->
-            <param-name>jersey.config.server.provider.packages</param-name>
-            <param-value>se.ifmo.rest</param-value>
-        </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
 
-    <!-- Укажите URL-шаблон для REST-эндпоинтов -->
     <servlet-mapping>
         <servlet-name>Jersey REST Service</servlet-name>
         <url-pattern>/*</url-pattern>
