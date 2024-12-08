@@ -4,7 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
-import se.ifmo.models.Users;
+import se.ifmo.entities.Users;
 import se.ifmo.util.PasswordHasher;
 
 @Stateless

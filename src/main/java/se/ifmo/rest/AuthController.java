@@ -14,7 +14,7 @@ import jakarta.ws.rs.core.Response;
 import se.ifmo.dto.ErrorResponse;
 import se.ifmo.dto.TokenResponse;
 import se.ifmo.dto.UserRequest;
-import se.ifmo.models.Users;
+import se.ifmo.entities.Users;
 import se.ifmo.services.UserService;
 
 @Path("/auth")

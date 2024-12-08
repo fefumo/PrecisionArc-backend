@@ -11,13 +11,11 @@ import jakarta.ws.rs.core.Response;
 import se.ifmo.dto.ErrorResponse;
 import se.ifmo.dto.PointRequest;
 import se.ifmo.dto.PointResponse;
-import se.ifmo.models.Point;
-import se.ifmo.models.Users;
+import se.ifmo.entities.Point;
+import se.ifmo.entities.Users;
 import se.ifmo.services.PointService;
 import se.ifmo.services.UserService;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -85,22 +83,23 @@ public class PointResource {
                                .build();
             }
 
-            logger.info("Adding point for user: {}", username);
-
-            Point point = pointService.savePoint(pointRequest, user);
+            logger.info("Adding point for user: " + username);
 
             // Calculate elapsed time
             long currentTime = System.currentTimeMillis();
             long elapsedTime = currentTime - startTime;
 
-            String currentTimeStr = new SimpleDateFormat("HH:mm:ss.SSS").format(new Date(currentTime));
+            Point point = pointService.savePoint(pointRequest, user, elapsedTime);
+
+            // String currentTimeStr = new SimpleDateFormat("HH:mm:ss.SSS").format(new Date(currentTime));
 
             PointResponse pointResponse = new PointResponse(
                 point.getId(),
-                point.getxCoord(),
-                point.getyCoord(),
+                point.getX(),
+                point.getY(),
+                point.getR(),
                 point.getResult(),
-                currentTimeStr,
+                point.getTimestampString(),
                 String.valueOf(elapsedTime)
             );
 
@@ -144,11 +143,12 @@ public class PointResource {
             List<PointResponse> responseList = points.stream()
                 .map(point -> new PointResponse(
                     point.getId(),
-                    point.getxCoord(),
-                    point.getyCoord(),
+                    point.getX(),
+                    point.getY(),
+                    point.getR(),
                     point.getResult(),
-                    null, 
-                    null  
+                    point.getTimestampString(), 
+                    String.valueOf(point.getElapsedTime())
                 ))
                 .collect(Collectors.toList());
 

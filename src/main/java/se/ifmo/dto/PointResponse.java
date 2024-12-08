@@ -2,17 +2,19 @@ package se.ifmo.dto;
 
 public class PointResponse {
     private Long id;
-    private Double xCoord;
-    private Double yCoord;
+    private Double x;
+    private Double y;
+    private Double r;
     private Boolean result;
     private String currentTime;
     private String elapsedTime;
 
-    public PointResponse(Long id, Double xCoord, Double yCoord, Boolean result, String currentTime,
+    public PointResponse(Long id, Double x, Double y, Double r, Boolean result, String currentTime,
             String elapsedTime) {
         this.id = id;
-        this.xCoord = xCoord;
-        this.yCoord = yCoord;
+        this.x = x;
+        this.y = y;
+        this.r = r;
         this.result = result;
         this.currentTime = currentTime;
         this.elapsedTime = elapsedTime;
@@ -26,20 +28,20 @@ public class PointResponse {
         this.id = id;
     }
 
-    public Double getxCoord() {
-        return xCoord;
+    public Double getX() {
+        return x;
     }
 
-    public void setxCoord(Double xCoord) {
-        this.xCoord = xCoord;
+    public void setX(Double x) {
+        this.x = x;
     }
 
-    public Double getyCoord() {
-        return yCoord;
+    public Double getY() {
+        return y;
     }
 
-    public void setyCoord(Double yCoord) {
-        this.yCoord = yCoord;
+    public void setY(Double y) {
+        this.y = y;
     }
 
     public Boolean getResult() {
@@ -64,6 +66,14 @@ public class PointResponse {
 
     public void setElapsedTime(String elapsedTime) {
         this.elapsedTime = elapsedTime;
+    }
+
+    public Double getR() {
+        return r;
+    }
+
+    public void setR(Double r) {
+        this.r = r;
     }
     
 }
