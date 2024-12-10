@@ -158,6 +158,7 @@ public class PointController {
             }
 
             String username = JwtUtil.extractUsername(token);
+            logger.info("Requst from user " + username + " to get the points");
             Users user = userService.findUserByUsername(username);
 
             if (user == null) {
