@@ -1,3 +1,8 @@
+import org.xml.sax.helpers.DefaultHandler
+
+import javax.xml.parsers.DocumentBuilderFactory
+import java.security.MessageDigest
+
 plugins {
     id 'java'
     id 'war'
@@ -45,6 +50,9 @@ dependencies {
 
     // Logging
     implementation 'org.slf4j:slf4j-api:2.0.16'
+
+    // javax.xml.parsers, org.w3c.dom
+    implementation 'xml-apis:xml-apis:1.4.01'
 }
 
 def srcDir = file('src/main/java')
@@ -104,17 +112,37 @@ tasks.register('compile') {
 }
 
 // No main class, this is just a class container
-tasks.register('buildJar', Jar) {
-    group = 'CS lab'
+tasks.register('myBuild') {
     description = 'Package classes into a plain JAR (non-executable).'
+    group = 'CS lab'
 
-    dependsOn 'compile'
+    dependsOn compile
 
-    archiveBaseName.set('uselessJarForTheTask')
-    archiveVersion.set(version)
-    from sourceSets.main.output
+    doLast {
+        def jarFile = file('build/libs/OPILab3.jar')
+        def classesFiles = file('build/classes')
+        def manifest = file('build/tmp/jar/MANIFEST.MF')
+
+        jarFile.parentFile.mkdirs()
+
+        if (!manifest.exists()) {
+            manifest.parentFile.mkdirs()
+            manifest.text = "Manifest-Version: 1.0\n"
+        }
+
+        def command = [
+                'jar', 'cmf', manifest.absolutePath, jarFile.absolutePath,
+                '-C', classesFiles.absolutePath, '.'
+        ]
+
+        println "Executing ${command.join(' ')}"
+        exec {
+            commandLine command
+        }
+        println "JAR-file ${jarFile} has been successfully built"
+    }
+    // finalizedBy runTests
 }
-
 // tasks.register('buildJar') {
 //     group = 'CS lab'
 //     description = 'Package classes into a plain JAR.'
@@ -151,6 +179,33 @@ tasks.register('myClean') {
         }
     }
 }
+
+tasks.register('xml') {
+    description = 'Validates all project\'s .xml files'
+    group = 'CS lab'
+
+    doLast {
+        def xmlFiles = fileTree('src/main/resources') {
+            include '**/*.xml'
+        }
+
+        def factory = DocumentBuilderFactory.newInstance()
+        factory.setValidating(false)
+
+        def builder = factory.newDocumentBuilder()
+        builder.setErrorHandler(new DefaultHandler())
+
+        xmlFiles.each {
+            try {
+                builder.parse(it)
+                println "File ${it} is valid"
+            } catch (Exception e) {
+                println "Error in file ${it}: ${e.message}"
+            }
+        }
+    }
+}
+
 
 war {
     archiveFileName = 'PrecisionArc.war'
