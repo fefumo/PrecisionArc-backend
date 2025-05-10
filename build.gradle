@@ -1,0 +1,44 @@
+plugins {
+    id 'java'
+    id 'war'
+}
+
+group = 'se.ifmo'
+version = '1.0-SNAPSHOT'
+
+sourceCompatibility = '17'
+targetCompatibility = '17'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Jersey
+    implementation 'org.glassfish.jersey.containers:jersey-container-servlet:3.0.0'
+    implementation 'org.glassfish.jersey.inject:jersey-hk2:3.0.0'
+    implementation 'org.glassfish.jersey.media:jersey-media-json-binding:3.0.0'
+
+    // Jakarta EE
+    providedCompile 'jakarta.platform:jakarta.jakartaee-api:10.0.0'
+    providedCompile 'jakarta.ejb:jakarta.ejb-api:4.0.1'
+
+    // Hibernate
+    implementation 'org.hibernate.orm:hibernate-core:6.3.1.Final'
+
+    // PostgreSQL
+    implementation 'org.postgresql:postgresql:42.6.0'
+
+    // Hashing
+    implementation 'org.mindrot:jbcrypt:0.4'
+
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt:0.9.1'
+
+    // Logging
+    implementation 'org.slf4j:slf4j-api:2.0.16'
+}
+
+war {
+    archiveFileName = 'PrecisionArc.war'
+}
