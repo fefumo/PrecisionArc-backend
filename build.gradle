@@ -5,7 +5,15 @@ plugins {
 
 group = 'se.ifmo'
 version = '1.0-SNAPSHOT'
-
+//its better to use this:
+/*
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+*/
+//but i dont wanna install java 17 for it 
 sourceCompatibility = '17'
 targetCompatibility = '17'
 
@@ -37,6 +45,111 @@ dependencies {
 
     // Logging
     implementation 'org.slf4j:slf4j-api:2.0.16'
+}
+
+def srcDir = file('src/main/java')
+ext.compileSucceeded = true
+
+tasks.register('compile') {
+    description = 'Compile .java files'
+    group = 'CS lab'
+
+    def outDir = file('build/classes/java/main')
+
+    inputs.dir(srcDir)
+    outputs.dir(outDir)
+
+    doLast {
+        try {
+            outDir.mkdirs()
+            def javaFiles = fileTree(srcDir).matching { include '**/*.java' }.files.collect { it.path }
+
+            if (javaFiles.isEmpty()) {
+                throw new GradleException("There are no .java files to compile")
+            }
+
+            def classpath = configurations.compileClasspath.files.join(File.pathSeparator)
+            def command = ['javac', '-d', outDir.path]
+
+            if (classpath) {
+                command += ['-cp', classpath]
+            }
+
+            command += javaFiles
+
+            println "Running: ${command.join(' ')}"
+            def result = exec {
+                commandLine command
+                ignoreExitValue = true
+            }
+
+            copy {
+                from 'src/main/resources'
+                into 'build/resources/main'
+            }
+
+            if (result.exitValue == 0) {
+                println "Compilation succeeded"
+                compileSucceeded = true
+            } else {
+                println "Compilation failed"
+                compileSucceeded = false
+            }
+        } catch (Exception e) {
+            println "Error while the compile task: ${e.message}"
+            buildSucceeded = false
+        }
+
+    }
+}
+
+// No main class, this is just a class container
+tasks.register('buildJar', Jar) {
+    group = 'CS lab'
+    description = 'Package classes into a plain JAR (non-executable).'
+
+    dependsOn 'compile'
+
+    archiveBaseName.set('uselessJarForTheTask')
+    archiveVersion.set(version)
+    from sourceSets.main.output
+}
+
+// tasks.register('buildJar') {
+//     group = 'CS lab'
+//     description = 'Package classes into a plain JAR.'
+
+//     dependsOn 'compile'
+
+//     doLast {
+//         def jar = tasks.create('customJar', Jar) {
+//             archiveBaseName.set('app')
+//             archiveVersion.set(version)
+//             from sourceSets.main.output
+//             manifest {
+//                 attributes(
+//                     'Main-Class': 'se.ifmo.Main'
+//                 )
+//             }
+//         }
+//         jar.execute()
+//     }
+// }
+
+tasks.register('myClean') {
+    description = 'Remove \'build\' directory'
+    group = 'CS lab'
+
+    doLast {
+        def buildDir = file('build')
+
+        if (buildDir.exists()) {
+            println "Removing ${buildDir} directory..."
+            buildDir.deleteDir()
+        } else {
+            println '\'build\' directory not found'
+        }
+    }
 }
 
 war {
