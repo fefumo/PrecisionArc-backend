@@ -3,7 +3,7 @@
 WILDFLY_HOME=~/wildfly/wildfly-preview-26.1.3.Final
 
 echo "Building project..."
-if gradle clean assemble; then
+if gradle clean war; then
     echo "Build successful. Deploying to WildFly..."
     cp ./build/libs/PrecisionArc.war $WILDFLY_HOME/standalone/deployments/
 else

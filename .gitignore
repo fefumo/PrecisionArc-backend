@@ -5,3 +5,5 @@ build
 gradle
 gradlew
 gradlew.bat
+
+test-results

@@ -32,18 +32,12 @@ public class RegisterTest {
     }
 
     private void clickSubmitSafely() {
-        try {
-            // Wait for hint to disappear
-            wait.until(ExpectedConditions.invisibilityOfElementLocated(By.className("p-password-info")));
-        } catch (Exception e) {
-            System.out.println("Warning: .p-password-info did not disappear in time.");
-        }
 
         WebElement button = driver.findElement(By.cssSelector("button[type='submit']"));
         try {
             button.click();
         } catch (ElementClickInterceptedException e) {
-            System.out.println("Element was still obscured. Using JS click.");
+            //System.out.println("Button was still obscured. Using JS click.");
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", button);
         }
     }
@@ -60,8 +54,9 @@ public class RegisterTest {
         driver.findElement(By.cssSelector("#confirmPassword input")).sendKeys(randomPassword);
 
         clickSubmitSafely();
+        wait.withTimeout(Duration.ofSeconds(10))
+            .until(ExpectedConditions.urlToBe("http://localhost:3000/"));
 
-        wait.until(ExpectedConditions.urlToBe("http://localhost:3000/"));
         assertEquals("http://localhost:3000/", driver.getCurrentUrl());
     }
 
