@@ -41,11 +41,11 @@ public class LoginTest {
         loginButton.click();
 
         // Wait until URL changes to /main
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
-        wait.until(ExpectedConditions.urlContains("/main"));
+        new WebDriverWait(driver, Duration.ofSeconds(10))
+                .until(webDriver -> webDriver.getCurrentUrl().equals("http://localhost:3000/main"));
 
         // Assert final URL
-        assertTrue(driver.getCurrentUrl().contains("/main"));
+        assertTrue(driver.getCurrentUrl().equals("http://localhost:3000/main"));
     }
 
     @Test
@@ -67,7 +67,8 @@ public class LoginTest {
         WebElement alert = wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("error-message")));
 
         String errorText = alert.getText();
-        Assertions.assertTrue(errorText.contains("Login"));
+        assertTrue(errorText.contains("Login"));
+        assertTrue(driver.getCurrentUrl().equals("http://localhost:3000/"));
     }
 
     @Test
@@ -88,7 +89,7 @@ public class LoginTest {
 
         String currentUrl = driver.getCurrentUrl();
         assertTrue(
-                currentUrl.equals("http://localhost:3000/") || currentUrl.equals("http://localhost:3000"),
+                currentUrl.equals("http://localhost:3000/"),
                 "Should stay on login page if required fields are empty");
     }
 
@@ -110,9 +111,8 @@ public class LoginTest {
 
         String currentUrl = driver.getCurrentUrl();
         assertTrue(
-                currentUrl.equals("http://localhost:3000/") || currentUrl.equals("http://localhost:3000"),
+                currentUrl.equals("http://localhost:3000/"),
                 "Should stay on login page if required fields are empty");
     }
 
-    
 }
