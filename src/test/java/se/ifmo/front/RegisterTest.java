@@ -1,5 +1,6 @@
 package se.ifmo.front;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
@@ -17,7 +18,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import se.ifmo.util.RandomStringGenerator;
 
 public class RegisterTest {
-        private WebDriver driver;
+    private WebDriver driver;
 
     @BeforeEach
     void setUp() {
@@ -30,7 +31,7 @@ public class RegisterTest {
     }
 
     @Test
-    void testSuccessfulRegistration(){
+    void testSuccessfulRegistration() {
         String randomName = RandomStringGenerator.generateString();
         String randomPassword = RandomStringGenerator.generateString();
 
@@ -47,7 +48,7 @@ public class RegisterTest {
         // Enter passwordx2
         WebElement confirmPasswordInput = driver.findElement(By.cssSelector("#confirmPassword input"));
         confirmPasswordInput.sendKeys(randomPassword);
-        
+
         // Submit the form
         WebElement loginButton = driver.findElement(By.cssSelector("button[type='submit']"));
         loginButton.click();
@@ -61,7 +62,7 @@ public class RegisterTest {
     }
 
     @Test
-    void testEmptyUsernameRegistration(){
+    void testEmptyUsernameRegistration() {
         String randomPassword = RandomStringGenerator.generateString();
 
         driver.get("http://localhost:3000/register");
@@ -77,7 +78,7 @@ public class RegisterTest {
         // Enter passwordx2
         WebElement confirmPasswordInput = driver.findElement(By.cssSelector("#confirmPassword input"));
         confirmPasswordInput.sendKeys(randomPassword);
-        
+
         // Submit the form
         WebElement loginButton = driver.findElement(By.cssSelector("button[type='submit']"));
         loginButton.click();
@@ -91,7 +92,7 @@ public class RegisterTest {
     }
 
     @Test
-    void testEmptyPasswordRegistration(){
+    void testEmptyPasswordRegistration() {
         String randomName = RandomStringGenerator.generateString();
         String randomPassword = RandomStringGenerator.generateString();
 
@@ -108,7 +109,7 @@ public class RegisterTest {
         // Enter passwordx2
         WebElement confirmPasswordInput = driver.findElement(By.cssSelector("#confirmPassword input"));
         confirmPasswordInput.sendKeys(randomPassword);
-        
+
         // Submit the form
         WebElement loginButton = driver.findElement(By.cssSelector("button[type='submit']"));
         loginButton.click();
@@ -121,5 +122,34 @@ public class RegisterTest {
         assertTrue(driver.getCurrentUrl().contentEquals("http://localhost:3000/register"));
     }
 
-    
+    @Test
+    void testRegisterWithExistingName() {
+        driver.get("http://localhost:3000/register");
+
+        // Enter nickname
+        WebElement nicknameInput = driver.findElement(By.id("username"));
+        nicknameInput.sendKeys("asd");
+
+        // Enter password
+        WebElement passwordInput = driver.findElement(By.cssSelector("#password input"));
+        passwordInput.sendKeys("asd");
+
+        // Enter passwordx2
+        WebElement confirmPasswordInput = driver.findElement(By.cssSelector("#confirmPassword input"));
+        confirmPasswordInput.sendKeys("asd");
+
+        // Submit the form
+        WebElement loginButton = driver.findElement(By.cssSelector("button[type='submit']"));
+        loginButton.click();
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        WebElement errorMessage = wait.until(
+                ExpectedConditions.visibilityOfElementLocated(
+                        By.xpath("//p[text()='Registration failed.']")));
+
+        // Assert final URL
+        assertTrue(driver.getCurrentUrl().contentEquals("http://localhost:3000/register"));
+        assertEquals("Registration failed.", errorMessage.getText());
+    }
+
 }
