@@ -24,6 +24,12 @@ public class LoginTest {
         driver.quit();
     }
 
+    // @Test
+    // void testClasspathPrint() {
+    //     String classpath = System.getProperty("java.class.path");
+    //     System.out.println(">>> CLASSPATH: " + classpath);
+    // }
+
     @Test
     void testSuccessfulLogin() {
         driver.get("http://localhost:3000/");

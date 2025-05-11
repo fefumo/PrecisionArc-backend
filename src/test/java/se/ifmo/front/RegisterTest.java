@@ -1,16 +1,13 @@
 package se.ifmo.front;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -19,15 +16,36 @@ import se.ifmo.util.RandomStringGenerator;
 
 public class RegisterTest {
     private WebDriver driver;
+    private WebDriverWait wait;
 
     @BeforeEach
     void setUp() {
         driver = new FirefoxDriver();
+        wait = new WebDriverWait(driver, Duration.ofSeconds(5));
     }
 
     @AfterEach
     void tearDown() {
-        driver.quit();
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+
+    private void clickSubmitSafely() {
+        try {
+            // Wait for hint to disappear
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(By.className("p-password-info")));
+        } catch (Exception e) {
+            System.out.println("Warning: .p-password-info did not disappear in time.");
+        }
+
+        WebElement button = driver.findElement(By.cssSelector("button[type='submit']"));
+        try {
+            button.click();
+        } catch (ElementClickInterceptedException e) {
+            System.out.println("Element was still obscured. Using JS click.");
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", button);
+        }
     }
 
     @Test
@@ -37,28 +55,14 @@ public class RegisterTest {
 
         driver.get("http://localhost:3000/register");
 
-        // Enter nickname
-        WebElement nicknameInput = driver.findElement(By.id("username"));
-        nicknameInput.sendKeys(randomName);
+        driver.findElement(By.id("username")).sendKeys(randomName);
+        driver.findElement(By.cssSelector("#password input")).sendKeys(randomPassword);
+        driver.findElement(By.cssSelector("#confirmPassword input")).sendKeys(randomPassword);
 
-        // Enter password
-        WebElement passwordInput = driver.findElement(By.cssSelector("#password input"));
-        passwordInput.sendKeys(randomPassword);
+        clickSubmitSafely();
 
-        // Enter passwordx2
-        WebElement confirmPasswordInput = driver.findElement(By.cssSelector("#confirmPassword input"));
-        confirmPasswordInput.sendKeys(randomPassword);
-
-        // Submit the form
-        WebElement loginButton = driver.findElement(By.cssSelector("button[type='submit']"));
-        loginButton.click();
-
-        // Wait until URL changes to /
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
         wait.until(ExpectedConditions.urlToBe("http://localhost:3000/"));
-
-        // Assert final URL
-        assertTrue(driver.getCurrentUrl().contentEquals("http://localhost:3000/"));
+        assertEquals("http://localhost:3000/", driver.getCurrentUrl());
     }
 
     @Test
@@ -67,89 +71,49 @@ public class RegisterTest {
 
         driver.get("http://localhost:3000/register");
 
-        // Enter nickname
-        WebElement nicknameInput = driver.findElement(By.id("username"));
-        nicknameInput.sendKeys("");
+        driver.findElement(By.id("username")).sendKeys("");
+        driver.findElement(By.cssSelector("#password input")).sendKeys(randomPassword);
+        driver.findElement(By.cssSelector("#confirmPassword input")).sendKeys(randomPassword);
 
-        // Enter password
-        WebElement passwordInput = driver.findElement(By.cssSelector("#password input"));
-        passwordInput.sendKeys(randomPassword);
+        clickSubmitSafely();
 
-        // Enter passwordx2
-        WebElement confirmPasswordInput = driver.findElement(By.cssSelector("#confirmPassword input"));
-        confirmPasswordInput.sendKeys(randomPassword);
-
-        // Submit the form
-        WebElement loginButton = driver.findElement(By.cssSelector("button[type='submit']"));
-        loginButton.click();
-
-        // Wait until URL DOES NOT change
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
         wait.until(ExpectedConditions.urlToBe("http://localhost:3000/register"));
-
-        // Assert final URL
-        assertTrue(driver.getCurrentUrl().contentEquals("http://localhost:3000/register"));
+        assertEquals("http://localhost:3000/register", driver.getCurrentUrl());
     }
 
     @Test
     void testEmptyPasswordRegistration() {
         String randomName = RandomStringGenerator.generateString();
-        String randomPassword = RandomStringGenerator.generateString();
 
         driver.get("http://localhost:3000/register");
 
-        // Enter nickname
-        WebElement nicknameInput = driver.findElement(By.id("username"));
-        nicknameInput.sendKeys(randomName);
+        driver.findElement(By.id("username")).sendKeys(randomName);
+        driver.findElement(By.cssSelector("#password input")).sendKeys("");
+        driver.findElement(By.cssSelector("#confirmPassword input")).sendKeys("somepass");
 
-        // Enter password
-        WebElement passwordInput = driver.findElement(By.cssSelector("#password input"));
-        passwordInput.sendKeys("");
+        clickSubmitSafely();
 
-        // Enter passwordx2
-        WebElement confirmPasswordInput = driver.findElement(By.cssSelector("#confirmPassword input"));
-        confirmPasswordInput.sendKeys(randomPassword);
-
-        // Submit the form
-        WebElement loginButton = driver.findElement(By.cssSelector("button[type='submit']"));
-        loginButton.click();
-
-        // Wait until URL DOES NOT change
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
         wait.until(ExpectedConditions.urlToBe("http://localhost:3000/register"));
-
-        // Assert final URL
-        assertTrue(driver.getCurrentUrl().contentEquals("http://localhost:3000/register"));
+        assertEquals("http://localhost:3000/register", driver.getCurrentUrl());
     }
 
     @Test
     void testRegisterWithExistingName() {
         driver.get("http://localhost:3000/register");
 
-        // Enter nickname
-        WebElement nicknameInput = driver.findElement(By.id("username"));
-        nicknameInput.sendKeys("asd");
+        driver.findElement(By.id("username")).sendKeys("asd");
+        driver.findElement(By.cssSelector("#password input")).sendKeys("asd");
+        driver.findElement(By.cssSelector("#confirmPassword input")).sendKeys("asd");
 
-        // Enter password
-        WebElement passwordInput = driver.findElement(By.cssSelector("#password input"));
-        passwordInput.sendKeys("asd");
+        clickSubmitSafely();
 
-        // Enter passwordx2
-        WebElement confirmPasswordInput = driver.findElement(By.cssSelector("#confirmPassword input"));
-        confirmPasswordInput.sendKeys("asd");
-
-        // Submit the form
-        WebElement loginButton = driver.findElement(By.cssSelector("button[type='submit']"));
-        loginButton.click();
-
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
         WebElement errorMessage = wait.until(
-                ExpectedConditions.visibilityOfElementLocated(
-                        By.xpath("//p[text()='Registration failed.']")));
+            ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//p[text()='Registration failed.']")
+            )
+        );
 
-        // Assert final URL
-        assertTrue(driver.getCurrentUrl().contentEquals("http://localhost:3000/register"));
+        assertEquals("http://localhost:3000/register", driver.getCurrentUrl());
         assertEquals("Registration failed.", errorMessage.getText());
     }
-
 }
