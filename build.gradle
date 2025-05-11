@@ -10,15 +10,15 @@ plugins {
 
 group = 'se.ifmo'
 version = '1.0-SNAPSHOT'
-//its better to use this:
 /*
+its better to use this:
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
 }
+but i dont wanna install java 17 for it 
 */
-//but i dont wanna install java 17 for it 
 sourceCompatibility = '17'
 targetCompatibility = '17'
 
@@ -55,17 +55,25 @@ dependencies {
     implementation 'xml-apis:xml-apis:1.4.01'
 
     // Testing
+    
+    //Selenium
     testImplementation 'org.seleniumhq.selenium:selenium-java:4.19.1'
+    
+    //Junit
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-console-standalone:1.10.2'
+    //testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
+    //implementation "org.junit.platform:junit-platform-console:1.9.2" // again, classpath problems
+    //testImplementation 'org.apiguardian:apiguardian-api:1.1.2' // because of custom compile task
 }
 
 test{
     useJUnitPlatform()
 }
-def srcDir = file('src/main/java')
 ext.compileSucceeded = true
 
 tasks.register('compile') {
+    def srcDir = file('src/main/java')
     description = 'Compile .java files'
     group = 'CS lab'
 
@@ -118,6 +126,49 @@ tasks.register('compile') {
     }
 }
 
+// tasks.register('myWar') {
+//     group = 'CS lab'
+//     description = 'war compile'
+
+//     dependsOn compile
+
+//     doLast {
+//         def warFile = file("build/libs/PrecisionArc.war")
+//         def compiledClassesDir = file("build/classes/java/main")
+//         def resourcesDir = file('src/main/resources/')
+
+//         def warTmpDir = file("build/tmp/war")
+//         def webInfDir = new File(warTmpDir, 'WEB-INF')
+//         def libsDir = new File(webInfDir, 'lib')
+//         def classesDir = new File(webInfDir, 'classes')
+
+//         warFile.parentFile.mkdirs()
+//         mkdir classesDir
+//         mkdir libsDir
+
+//         copy {
+//             from compiledClassesDir
+//             into classesDir
+//         }
+
+//         if (resourcesDir.exists()) {
+//             copy {
+//                 from resourcesDir
+//                 into classesDir
+//             }
+//         }
+
+//         exec {
+//             workingDir warTmpDir
+//             commandLine 'jar', 'cf', warFile.absolutePath, '.'
+//         }
+
+//         delete warTmpDir
+
+//         println "WAR: ${warFile}"
+//     }
+// }
+
 // No main class, this is just a class container
 tasks.register('myBuild') {
     description = 'Package classes into a plain JAR (non-executable).'
@@ -150,6 +201,7 @@ tasks.register('myBuild') {
     }
     // finalizedBy runTests
 }
+
 // tasks.register('buildJar') {
 //     group = 'CS lab'
 //     description = 'Package classes into a plain JAR.'
@@ -170,6 +222,7 @@ tasks.register('myBuild') {
 //         jar.execute()
 //     }
 // }
+
 
 tasks.register('myClean') {
     description = 'Remove \'build\' directory'
@@ -212,7 +265,197 @@ tasks.register('xml') {
         }
     }
 }
+tasks.register('startBackend') {
+    group = 'CS lab'
+    description = 'Deploys WAR to WildFly'
 
+    dependsOn tasks.war
+
+    doLast {
+        def wildflyHome = "${System.getProperty("user.home")}/wildfly/wildfly-preview-26.1.3.Final"
+        def warFile = file("build/libs/PrecisionArc.war")
+        def deployDir = file("$wildflyHome/standalone/deployments")
+        def wildflyBin = file("$wildflyHome/bin/standalone.sh")
+
+        if (!warFile.exists()) {
+            throw new GradleException("WAR file not found: ${warFile}")
+        }
+
+        println "Copying ${warFile} to ${deployDir}"
+        copy {
+            from warFile
+            into deployDir
+        }
+
+        println "Starting WildFly..."
+        def pb = new ProcessBuilder("bash", "-c", "nohup ${wildflyBin.absolutePath} > wildfly.log 2>&1 &")
+        pb.directory(file(wildflyHome))
+        pb.start()
+        println "WildFly started in background"
+
+        println "Waiting for backend to be ready..."
+        def maxAttempts = 30
+        def backendReady = false
+
+        for (int i = 0; i < maxAttempts; i++) {
+            try {
+                def conn = new URL("http://localhost:8080/").openConnection()
+                conn.setConnectTimeout(1000)
+                conn.setReadTimeout(1000)
+                def code = conn.getResponseCode()
+                println "Attempt $i: HTTP $code"
+                if (code in [200, 400, 404, 405]) {
+                    backendReady = true
+                    println "Backend is ready!"
+                    break
+                }
+            } catch (Exception e) {
+                println "Attempt $i: Connection failed - ${e.message}"
+            }
+            sleep(1000)
+        }
+
+        if (!backendReady) {
+            throw new GradleException("Backend did not become ready in time")
+        }
+    }
+}
+
+
+tasks.register('startFrontend') {
+    group = 'CS lab'
+    description = 'Starts React frontend using npm (background)'
+
+    doLast {
+        def frontendDir = "${System.getProperty('user.home')}/my-coding/PrecisionArc-frontend"
+
+        println "Starting React frontend from $frontendDir..."
+
+        exec {
+            workingDir frontendDir
+            commandLine 'bash', '-c', "nohup npm start > frontend.log 2>&1 &"
+            ignoreExitValue = true
+        }
+
+        println "Frontend started in background (logs in frontend.log)"
+    }
+}
+/* -------------------------------------- TESTING -------------------------------------- */
+configurations {
+    functionalTestImplementation.extendsFrom testImplementation
+    functionalTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+test {
+    useJUnitPlatform()
+}
+
+def testSrcDir = 'src/test/java'
+def testOutDir = 'build/classes/java/test'
+
+tasks.register("compileTestClasses") {
+    group = 'CS lab'
+    description = 'Compiles JUnit test classes in src/test/java'
+
+
+    inputs.dir(testSrcDir)
+    outputs.dir(testOutDir)
+
+    doLast {
+        // def javaFiles = fileTree(testSrcDir).matching { include '**/*.java' }.files.collect { it.path }
+        def srcFiles = fileTree(dir: testSrcDir, include: '**/*.java').files*.path
+
+        if (srcFiles.isEmpty()) {
+            println "No test sources to compile"
+            return
+        }
+
+        def classpath = configurations.testRuntimeClasspath.asPath
+        def command = ['javac', '-d', testOutDir, '-cp', classpath] + srcFiles
+
+        println "Compiling test classes: ${command.join(' ')}"
+        exec {
+            commandLine command
+        }
+        println "Tests compiled successfully."
+    }
+}
+
+tasks.register("runTests") {
+    group = 'CS lab'
+    description = 'build, deploy project & run tests'
+    dependsOn compileTestClasses, war, startBackend, startFrontend 
+    tasks.getByName('startBackend').mustRunAfter 'war'
+    tasks.getByName('startFrontend').mustRunAfter 'startBackend'
+    tasks.getByName('compileTestClasses').mustRunAfter 'startFrontend'
+
+    doLast {
+        println "Running functional tests..."
+
+        def classpath = files(
+                testOutDir,
+                configurations.testRuntimeClasspath
+        ).asPath
+
+
+        def reportDir = "test-results"
+        mkdir(reportDir)
+
+        def cmd = [
+                "java",
+                "-cp", classpath,
+                "org.junit.platform.console.ConsoleLauncher",
+                "--scan-class-path", testOutDir,
+                "--details", "tree",
+                "--details-theme", "ascii",
+                "--reports-dir=${reportDir}"
+        ]
+
+        def res = exec {
+            commandLine cmd
+            ignoreExitValue = true
+        }
+
+        if (res.exitValue == 0) {
+            println "All tests passed!"
+            file("build/test-success.flag").text = "success"
+        }  else {
+            println "Tests failed."
+        }
+
+        println "Tests run finished."
+    }
+    finalizedBy stopFrontend, stopBackend
+}
+
+tasks.register('stopFrontend') {
+    group = 'CS lab'
+    description = 'Stops the React frontend by killing processes named MainThread'
+
+    doLast {
+        println "Killing frontend processes with name MainThread..."
+        exec {
+            commandLine 'pkill', 'MainThread'
+            ignoreExitValue = true
+        }
+        println "Frontend stop command issued (pkill MainThread)"
+    }
+}
+
+
+tasks.register('stopBackend') {
+    group = 'CS lab'
+    description = 'Stops WildFly server'
+
+    doLast {
+        println "Stopping WildFly..."
+        exec {
+            commandLine 'pkill', '-f', 'wildfly.*standalone'
+            ignoreExitValue = true
+        }
+        println "Killed wildfly"
+    }
+}
 
 war {
     archiveFileName = 'PrecisionArc.war'
