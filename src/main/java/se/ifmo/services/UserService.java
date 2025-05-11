@@ -26,7 +26,7 @@ public class UserService {
     @Transactional
     public boolean registerUser(String username, String password) {
         if (findUserByUsername(username) != null) {
-            return false; // Пользователь с таким именем уже существует
+            return false;
         }
 
         Users user = new Users();
