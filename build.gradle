@@ -341,10 +341,6 @@ tasks.register('startFrontend') {
     }
 }
 /* -------------------------------------- TESTING -------------------------------------- */
-configurations {
-    functionalTestImplementation.extendsFrom testImplementation
-    functionalTestRuntimeOnly.extendsFrom testRuntimeOnly
-}
 
 test {
     useJUnitPlatform()
@@ -459,4 +455,151 @@ tasks.register('stopBackend') {
 
 war {
     archiveFileName = 'PrecisionArc.war'
+}
+
+
+tasks.register('history') {
+    group = 'CS lab'
+    description = 'Finds the last working revision by sequentially checking previous versions until compilation succeeds'
+
+    doLast {
+        if (compileSucceeded) {
+            println 'Compilation Succeeded. Task "history" skipped'
+            return
+        }
+
+        println 'Compilation failed. Starting task "history"...'
+
+        def maxAttempts = 50
+        def attempt = 0
+
+        def firstCommit = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'rev-list', '--max-parents=0', 'HEAD'
+            standardOutput = firstCommit
+        }
+        firstCommit = firstCommit.toString().trim()
+
+        while (!compileSucceeded && attempt < maxAttempts) {
+            attempt++
+            println "Attempt #$attempt: Switching to previous commit..."
+
+            def currentCommit = new ByteArrayOutputStream()
+            exec {
+                commandLine 'git', 'rev-parse', 'HEAD'
+                standardOutput = currentCommit
+            }
+            currentCommit = currentCommit.toString().trim()
+
+            if (currentCommit == firstCommit) {
+                println "First commit reached. Making diff.txt file..."
+
+                def allCommits = new ByteArrayOutputStream()
+                exec {
+                    commandLine 'git', 'rev-list', '--reverse', '--all'
+                    standardOutput = allCommits
+                    ignoreExitValue true
+                }
+                def commitList = allCommits.toString().trim().split("\n")
+
+                if (commitList.size() > 1) {
+                    def secondCommit = commitList[1] // Head~2
+
+                    def diffOutput = new ByteArrayOutputStream()
+                    exec {
+                        commandLine 'git', 'diff', currentCommit, secondCommit
+                        standardOutput = diffOutput
+                        ignoreExitValue true
+                    }
+
+                    def diffFile = file("build/diff.txt")
+                    diffFile.parentFile.mkdirs()
+                    exec {
+                        commandLine 'git', 'diff', currentCommit, secondCommit
+                        standardOutput = new FileOutputStream(diffFile)
+                        ignoreExitValue true
+                    }
+                    println "Diff now in: ${diffFile.absolutePath}"
+                    compileSucceeded = true
+
+                } else {
+                    println "There is no next commit"
+                }
+
+                break
+            }
+
+            exec {
+                commandLine 'git', 'checkout', 'HEAD^'
+            }
+
+            println "Trying to compile..."
+
+            def src = file('src/main/java/se/ifmo')
+            def outDir = file('build/classes/java/main')
+            outDir.mkdirs()
+            def javaFiles = fileTree(src).matching { include '**/*.java' }.files.collect { it.path }
+
+            if (javaFiles.isEmpty()) {
+                throw new GradleException("There are no .java files to compile")
+            }
+
+            def classpath = configurations.compileClasspath.files.join(File.pathSeparator)
+            def command = ['javac', '-d', outDir.path]
+
+            if (classpath) {
+                command += ['-cp', classpath]
+            }
+
+            command += javaFiles
+
+            def result = exec {
+                commandLine command
+                ignoreExitValue = true
+            }
+
+            if (result.exitValue == 0) {
+                println "Compile Success! Making diff.txt ..."
+
+                def successCommit = new ByteArrayOutputStream()
+                exec {
+                    commandLine 'git', 'rev-parse', 'HEAD'
+                    standardOutput = successCommit
+                }
+                successCommit = successCommit.toString().trim()
+
+                def allCommitsFromSuccess = new ByteArrayOutputStream()
+                exec {
+                    commandLine 'git', 'rev-list', '--reverse', 'HEAD..main'
+                    standardOutput = allCommitsFromSuccess
+                    ignoreExitValue true
+                }
+                def commitList = allCommitsFromSuccess.toString().trim().split("\n")
+
+                def secondCommit = commitList[0] // HEAD^
+
+                def diffFile = file("build/diff.txt")
+                diffFile.parentFile.mkdirs()
+                exec {
+                    commandLine 'git', 'diff', successCommit, secondCommit
+                    standardOutput = new FileOutputStream(diffFile)
+                    ignoreExitValue true
+                }
+                println "Diff now in: ${diffFile.absolutePath}"
+                compileSucceeded = true
+
+                break
+
+            } else {
+                println "Compilation still failed."
+            }
+        }
+
+        if (!compileSucceeded) {
+            throw new GradleException("Unable to build project on any revision")
+        }
+        exec {
+            commandLine 'git', 'checkout', 'main'
+        }
+    }
 }
